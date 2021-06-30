@@ -31,7 +31,7 @@ from ..callbacks import History
 
 
 class Linear(nn.Module):
-    def __init__(self, feature_columns, feature_index, init_std=0.0001, device='cpu'):
+    def __init__(self, feature_columns, feature_index, init_std=0.0001, device='cpu', padding_idx=None):
         super(Linear, self).__init__()
         self.feature_index = feature_index
         self.device = device
@@ -44,7 +44,7 @@ class Linear(nn.Module):
             filter(lambda x: isinstance(x, VarLenSparseFeat), feature_columns)) if len(feature_columns) else []
 
         self.embedding_dict = create_embedding_matrix(feature_columns, init_std, linear=True, sparse=False,
-                                                      device=device)
+                                                      device=device, padding_idx=padding_idx)
 
         #         nn.ModuleDict(
         #             {feat.embedding_name: nn.Embedding(feat.dimension, 1, sparse=True) for feat in
@@ -93,11 +93,10 @@ class Linear(nn.Module):
 
 class BaseModel(nn.Module):
     def __init__(self, linear_feature_columns, dnn_feature_columns, l2_reg_linear=1e-5, l2_reg_embedding=1e-5,
-                 init_std=0.0001, seed=1024, task='binary', device='cpu', gpus=None):
+                 init_std=0.0001, seed=1024, task='binary', device='cpu', gpus=None, padding_idx=None):
 
         super(BaseModel, self).__init__()
         torch.manual_seed(seed)
-        self.dnn_feature_columns = dnn_feature_columns
 
         self.reg_loss = torch.zeros((1,), device=device)
         self.aux_loss = torch.zeros((1,), device=device)
@@ -111,7 +110,7 @@ class BaseModel(nn.Module):
             linear_feature_columns + dnn_feature_columns)
         self.dnn_feature_columns = dnn_feature_columns
 
-        self.embedding_dict = create_embedding_matrix(dnn_feature_columns, init_std, sparse=False, device=device)
+        self.embedding_dict = create_embedding_matrix(dnn_feature_columns, init_std, sparse=False, device=device, padding_idx=padding_idx)
         #         nn.ModuleDict(
         #             {feat.embedding_name: nn.Embedding(feat.dimension, embedding_size, sparse=True) for feat in
         #              self.dnn_feature_columns}
