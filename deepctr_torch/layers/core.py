@@ -141,7 +141,8 @@ class PredictionLayer(nn.Module):
          - **use_bias**: bool.Whether add bias term or not.
     """
 
-    def __init__(self, task='binary', use_bias=True, **kwargs):
+    def __init__(self, task='binary', task_dim = 1, use_bias=True, **kwargs):
+        """Note that task_dim is added"""
         if task not in ["binary", "multiclass", "regression"]:
             raise ValueError("task must be binary,multiclass or regression")
 
@@ -149,7 +150,7 @@ class PredictionLayer(nn.Module):
         self.use_bias = use_bias
         self.task = task
         if self.use_bias:
-            self.bias = nn.Parameter(torch.zeros((1,)))
+            self.bias = nn.Parameter(torch.zeros((1, task_dim))) # Note that the dimension become 2d!
 
     def forward(self, X):
         output = X
